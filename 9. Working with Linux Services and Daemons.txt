@@ -1,0 +1,136 @@
+Linux Boot up Process:
+----------------------
+							      ==> CMD (tty)		
+BIOS/UEFI => MBR/GPT => GRUB2 => Kernel => systemd => Target =>
+						 	      ==> GUI (pts)
+Change Default Boot Time:
+-------------------------
+[root@serverX ~]#  vim /boot/grub2/grub.cfg 
+ :set nu
+
+ 63   set timeout=40
+
+[root@serverX ~]# reboot
+
+Grub Entry Customize:
+--------------------
+[root@serverX ~]# vim /boot/grub2/grub.cfg 
+
+=============== Old ==============
+76 menuentry 'CentOS Linux, with Linux 3.10.0-123.el7.x86_64' 
+91 menuentry 'CentOS Linux, with Linux 0-rescue-fdbe8dca6eb044b6895149fc28e4a871'
+
+=============== New ==============
+76 menuentry 'Linux Server'
+91 menuentry 'CentOS Recovery mode'
+
+[root@serverX ~]# reboot
+
+[root@serverX ~]# vim /etc/motd
+
+ ########### Welcome to RedHat Linux Training    ########
+
+[root@serverX ~]# logout
+
+Working with Linux Kernel:
+--------------------------
+[root@serverX ~]# uname -r
+[root@serverX ~]# yum list installed kernel-*
+[root@serverX ~]# yum update kernel -y  
+[root@serverX ~]# yum list installed kernel-*
+
+systemd:
+--------
+One of the major changes in RHEL/CentOS 7.0 is the swtich to systemd,
+a system and service manager, that replaces SysV and Upstart used in previous 
+releases of Red Hat Enterprise Linux. systemd is compatible with SysV and 
+Linux Standard Base init scripts. 
+
+=> Fedora 17/RHEL/CentOS6 = SystemV/init
+=> Ubuntu/SUSE/Debian = upstart
+=> Fedora 18+/RHEL/CentOS7/Ubuntu-15 = systemd
+
+RHEL6 or Old Version:
+---------------------
+[root@serverX ~]# ls /etc/init.d/
+
+RHEL7 or New Version:
+---------------------
+[root@serverX ~]# ls /lib/systemd/system/*.service
+
+[root@serverX ~]# systemctl -t service
+
+Start/Stop/Restart/status Services with systemctl:
+-------------------------------------------------
+[root@desktopX ~]# systemctl start crond.service
+[root@desktopX ~]# systemctl status crond.service
+
+[root@desktopX ~]# systemctl stop crond.service
+[root@desktopX ~]# systemctl status crond.service
+
+[root@desktopX ~]# systemctl restart crond.service
+[root@desktopX ~]# systemctl reload XXXX.service
+
+Enable / Disable services to run at boot time:
+----------------------------------------------
+[root@desktopX ~]# systemctl enable crond.service
+[root@desktopX ~]# systemctl disable crond.service
+[root@desktopX ~]# systemctl status crond.service
+
+Working with halt/Restart/Poweroff/Hibernate:
+---------------------------------------------
+[root@desktopX ~]# systemctl halt
+[root@desktopX ~]# systemctl reboot
+[root@desktopX ~]# systemctl poweroff
+[root@desktopX ~]# systemctl hibernate 
+[root@desktopX ~]# systemctl suspend
+
+Working with Runlevels:
+-----------------------
+[root@desktopX ~]# systemctl get-default 
+graphical.target
+
+[root@desktopX ~]# systemctl set-default multi-user.target
+[root@desktopX ~]# systemctl get-default 
+multi-user.target
+
+[root@desktopX ~]# reboot
+
+[root@desktopX ~]# systemctl get-default 
+multi-user.target
+
+[root@desktopX ~]# systemctl set-default graphical.target
+
+[root@desktopX ~]# reboot
+
+Recover Root Password:
+---------------------
+ => Reboot your system by pressing 'Ctr+Alt+Del 
+ => Edit the default boot loader entry
+ => Press 'e' to edit the current entry
+ => Cursor navigate to the line that starts with 'linux16'.
+ => Press 'End' button to move the cursor to the end of the line.
+ => Append 'rd.break' to the end of the line.
+ => Press 'Ctrl+x' to boot using the modified config.
+
+switch_root:/# mount -o remount,rw /sysroot
+switch_root:/# chroot /sysroot
+
+sh-4.2# passwd    [press enter]
+
+  : ******* (123456)
+  : ******* (123456)
+
+sh-4.2# touch /.autorelabel 
+sh-4.2# exit 
+
+switch_root:/# exit
+
+=> Wait 2 Min
+
+=> Login with new password
+
+[root@desktopX ~]# passwd   ; press Enter
+
+  : ******* (centos)
+  : ******* (centos)
